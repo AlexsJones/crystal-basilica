@@ -22,6 +22,7 @@ func loadModule(m runtime.Module, masterCommands *[]cli.Command) {
 func generateRegistry(r *r.Registry) error {
 	//Adding modules here
 	r.Put(&modules.Gitlab{})
+	r.Put(&modules.Jenkins{})
 	return nil
 }
 
@@ -55,6 +56,10 @@ func main() {
 
 			case *modules.Gitlab:
 				cast := i.(*modules.Gitlab)
+				loadModule(cast, &commands)
+
+			case *modules.Jenkins:
+				cast := i.(*modules.Jenkins)
 				loadModule(cast, &commands)
 			}
 

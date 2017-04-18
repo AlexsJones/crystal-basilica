@@ -6,22 +6,22 @@ import (
 	"github.com/urfave/cli"
 )
 
-//Gitlab struct todo
-type Gitlab struct {
+//Jenkins struct todo
+type Jenkins struct {
 }
 
 //LoadFlags for cli
-func (*Gitlab) LoadFlags() []cli.Command {
+func (*Jenkins) LoadFlags() []cli.Command {
 
 	var commands []cli.Command = make([]cli.Command, 0)
 	n := cli.Command{
-		Name:    "Gitlab",
-		Aliases: []string{"g"},
+		Name:    "Jenkins",
+		Aliases: []string{"j"},
 		Usage:   "options for task templates",
 		Subcommands: []cli.Command{
 			{
 				Name:  "version",
-				Usage: "Get the gitlab module version",
+				Usage: "Get the jenkins module version",
 				Action: func(c *cli.Context) error {
 					fmt.Println("0.0.1")
 					return nil
