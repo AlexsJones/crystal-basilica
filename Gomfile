@@ -1,0 +1,3 @@
+gom 'github.com/AlexsJones/go-type-registry'
+gom 'github.com/dimiro1/banner'
+gom 'github.com/urfave/cli'
