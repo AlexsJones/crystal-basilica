@@ -5,7 +5,7 @@ import (
 	"go/importer"
 	"os"
 	"reflect"
-
+	"log"
 	r "github.com/AlexsJones/go-type-registry/core"
 	"github.com/AlexsJones/gotools/modules"
 	runtime "github.com/AlexsJones/gotools/runtime"
@@ -13,8 +13,9 @@ import (
 	"github.com/urfave/cli"
 )
 
-func loadModule(m runtime.Module) {
-	m.LoadFlags()
+func loadModule(m runtime.Module, masterCommands *[]cli.Command) {
+	moduleCommands := m.LoadFlags()
+	*masterCommands = append(*masterCommands, moduleCommands...)
 }
 
 func generateRegistry(r *r.Registry) error {
@@ -26,6 +27,7 @@ func generateRegistry(r *r.Registry) error {
 func main() {
 	app := cli.NewApp()
 	var commands []cli.Command
+
 	//Register types
 	registry, err := r.NewRegistry(generateRegistry)
 	if err != nil {
@@ -47,17 +49,18 @@ func main() {
 				return
 			}
 			i := currentModuleValue.Unwrap()
-			fmt.Println(reflect.TypeOf(i))
+			log.Println(reflect.TypeOf(i))
 			switch i.(type) {
 
 			case *modules.Gitlab:
 					cast := i.(*modules.Gitlab)
-					loadModule(cast)
+					loadModule(cast,&commands)
 			}
+
 		}
 	}
 
 	app.Commands = commands
-
+	log.Println(app.Commands)
 	app.Run(os.Args)
 }
