@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"go/importer"
+	"log"
 	"os"
 	"reflect"
-	"log"
+
 	r "github.com/AlexsJones/go-type-registry/core"
 	"github.com/AlexsJones/gotools/modules"
 	runtime "github.com/AlexsJones/gotools/runtime"
@@ -41,9 +42,9 @@ func main() {
 		return
 	}
 	for _, declName := range pkg.Scope().Names() {
-		if declName != "Module" {
+		if declName != "Module" && declName != "init" {
 			fmt.Println("Loading module: " + declName)
-			currentModuleValue,err := registry.Get("*modules." + declName)
+			currentModuleValue, err := registry.Get("*modules." + declName)
 			if err != nil {
 				fmt.Printf("error: %s\n", err.Error())
 				return
@@ -53,14 +54,13 @@ func main() {
 			switch i.(type) {
 
 			case *modules.Gitlab:
-					cast := i.(*modules.Gitlab)
-					loadModule(cast,&commands)
+				cast := i.(*modules.Gitlab)
+				loadModule(cast, &commands)
 			}
 
 		}
 	}
 
 	app.Commands = commands
-	log.Println(app.Commands)
 	app.Run(os.Args)
 }
