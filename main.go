@@ -10,19 +10,12 @@ import (
 
 	r "github.com/AlexsJones/go-type-registry/core"
 	"github.com/AlexsJones/gotools/modules"
-	runtime "github.com/AlexsJones/gotools/runtime"
 	_ "github.com/dimiro1/banner/autoload"
 	"github.com/urfave/cli"
 )
 
-func loadModule(m runtime.Module, masterCommands *[]cli.Command) {
-	moduleCommands := m.LoadFlags()
-	*masterCommands = append(*masterCommands, moduleCommands...)
-}
-
 func generateRegistry(r *r.Registry) error {
 	//Adding modules here
-	r.Put(&modules.Jenkins{})
 	r.Put(&modules.Portscan{})
 	return nil
 }
@@ -57,16 +50,14 @@ func main() {
 		}
 		i := currentModuleValue.Unwrap()
 		log.Println(reflect.TypeOf(i))
+
+		var ps *modules.Portscan
 		switch i.(type) {
 
 		case *modules.Portscan:
-			cast := i.(*modules.Portscan)
-			loadModule(cast, &commands)
-
-		case *modules.Jenkins:
-			cast := i.(*modules.Jenkins)
-			loadModule(cast, &commands)
-
+			ps = i.(*modules.Portscan)
+			moduleCommands := ps.LoadFlags()
+			commands = append(commands, moduleCommands...)
 		}
 	}
 

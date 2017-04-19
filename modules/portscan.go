@@ -5,11 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sync/atomic"
-
 	"math/big"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,28 +15,14 @@ import (
 	"github.com/urfave/cli"
 )
 
-var (
-	slogger *log.Logger
-	start   = time.Now()
-	nSuc    uint64
-)
-
-const (
-	//RETRYWAIT Wait at most this between retries
-	RETRYWAIT = time.Second * 30
-	//PROGINTERVAL interval
-	PROGINTERVAL = time.Second * 15
-)
-
 //Portscan struct todo
 type Portscan struct {
+	slogger *log.Logger
+	start   time.Time
+	nSuc    uint64
 }
 
-//Init portscan members
-func (*Portscan) Init() {
-
-}
-func attacker(
+func (p *Portscan) attacker(
 	target string,
 	ports <-chan string,
 	fails bool,
@@ -64,7 +47,7 @@ func attacker(
 		buf = buf[:cap(buf)]
 		err = nil
 		emsg = ""
-		n, err = attackOne(t, buf, to)
+		n, err = p.attackOne(t, buf, to)
 		if nil != err {
 			emsg = err.Error()
 		}
@@ -74,7 +57,7 @@ func attacker(
 			/* Sleep some amount of time */
 			bst, eg := rand.Int(
 				rand.Reader,
-				big.NewInt(RETRYWAIT.Nanoseconds()),
+				big.NewInt((time.Second * 30).Nanoseconds()),
 			)
 			if nil != eg {
 				log.Fatalf(
@@ -83,14 +66,7 @@ func attacker(
 				)
 			}
 			st := time.Duration(bst.Uint64()) * time.Nanosecond
-			/* Seems unnecessarily noisy
-			log.Printf(
-				"INFO Will retry port %v in %v due to "+
-					"\"connect: no route to host\" error",
-				port,
-				st,
-			)
-			*/
+
 			time.Sleep(st)
 			goto try /* Neener neener */
 		}
@@ -114,7 +90,7 @@ func attacker(
 			continue
 		}
 		buf = buf[:n]
-		slog(t, buf)
+		p.slog(t, buf)
 	}
 }
 
@@ -122,7 +98,7 @@ func attacker(
 successful connects and banner grabs.  buf is the read buffer, which will be
 populated if nil is returned and a banner was sent back.  If so, the number
 of bytes read is also returned. */
-func attackOne(t string, buf []byte, to time.Duration) (int, error) {
+func (p *Portscan) attackOne(t string, buf []byte, to time.Duration) (int, error) {
 	/* Try to connect */
 	c, err := net.DialTimeout("tcp", t, to)
 	if nil != err {
@@ -136,7 +112,8 @@ func attackOne(t string, buf []byte, to time.Duration) (int, error) {
 	n, _ := c.Read(buf)
 	return n, nil
 }
-func portList(rs string) ([]string, error) {
+
+func (p *Portscan) portList(rs string) ([]string, error) {
 	ns := make(map[int]struct{})
 
 	for _, r := range strings.Split(rs, ",") {
@@ -201,7 +178,7 @@ func portList(rs string) ([]string, error) {
 }
 
 //LoadFlags for cli
-func (*Portscan) LoadFlags() []cli.Command {
+func (p *Portscan) LoadFlags() []cli.Command {
 
 	var commands []cli.Command = make([]cli.Command, 0)
 	n := cli.Command{
@@ -217,21 +194,19 @@ func (*Portscan) LoadFlags() []cli.Command {
 
 					preport := c.Args().Get(1)
 					fmt.Println("Scanning: " + c.Args().Get(0) + " " + preport)
-
 					if preport == "" {
 						return errors.New("Requires port range to scan")
 					}
-					ports, err := portList(preport)
+					ports, err := p.portList(preport)
 					if err != nil {
 						return err
 					}
-					slogger = log.New(os.Stdout, "", log.LstdFlags|log.Lmicroseconds)
 
 					wg := &sync.WaitGroup{}
 					ch := make(chan string)
 					for i := 0; i < int(128); i++ {
 						wg.Add(1)
-						go attacker(
+						go p.attacker(
 							c.Args().Get(0),
 							ch,
 							false,
@@ -241,60 +216,13 @@ func (*Portscan) LoadFlags() []cli.Command {
 							wg,
 						)
 					}
-
-					lastt := time.Now()
-					lasti := 0
-					for i, p := range ports {
-						ch <- p
-						/* Log progress every so often */
-						if time.Now().After(lastt.Add(PROGINTERVAL)) {
-							n := time.Now()
-							/* Time this interval */
-							itime := n.Sub(lastt)
-							/* Ports per minute */
-							ppm := float64(i-lasti) / n.Sub(lastt).Minutes()
-							/* Estimated time remaining */
-							est := "forever"
-							etc := "never"
-							if lasti < i {
-								/* Duration per port */
-								dpp := itime / time.Duration(i-lasti)
-								rem := time.Duration(len(ports)-i) * dpp
-								est = fmt.Sprintf("%v", rem)
-								etc = n.Add(rem).Format("15:04:05")
-							}
-							log.Printf(
-								"INFO Working on port %v/%v "+
-									"(%0.2f ports/min, "+
-									"%v open, "+
-									"%4v remaining, "+
-									"est. completion: %v)",
-								i+1,
-								len(ports),
-								ppm,
-								nSuc,
-								est,
-								etc,
-							)
-							lastt = n
-							lasti = i
-						}
+					for _, dp := range ports {
+						ch <- dp
 					}
+
 					close(ch)
 					log.Printf("INFO Waiting for the attackers to finish")
-
-					/* Wait for attackers to finish */
 					wg.Wait()
-					d := time.Now().Sub(start)
-					log.Printf(
-						"INFO Scanned %v ports in %v (%0.2f ports per minute), "+
-							"found %v open",
-						len(ports),
-						d,
-						float64(len(ports))/d.Minutes(),
-						nSuc,
-					)
-
 					log.Printf("Done.")
 					return nil
 				},
@@ -306,8 +234,6 @@ func (*Portscan) LoadFlags() []cli.Command {
 	return commands
 }
 
-/* slog logs success */
-func slog(t string, buf []byte) {
-	atomic.AddUint64(&nSuc, 1)
-	slogger.Printf("SUCCESS %v %q", t, buf)
+func (p *Portscan) slog(t string, buf []byte) {
+	fmt.Println(t)
 }
