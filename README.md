@@ -11,3 +11,8 @@
 ```
 
 Modular build tools written in golang
+
+
+```
+gotools portscan scan 192.168.147 1-20000
+```

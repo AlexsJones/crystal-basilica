@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strings"
 
 	r "github.com/AlexsJones/go-type-registry/core"
 	"github.com/AlexsJones/gotools/modules"
@@ -21,8 +22,8 @@ func loadModule(m runtime.Module, masterCommands *[]cli.Command) {
 
 func generateRegistry(r *r.Registry) error {
 	//Adding modules here
-	r.Put(&modules.Gitlab{})
 	r.Put(&modules.Jenkins{})
+	r.Put(&modules.Portscan{})
 	return nil
 }
 
@@ -43,25 +44,28 @@ func main() {
 		return
 	}
 	for _, declName := range pkg.Scope().Names() {
-		if declName != "Module" && declName != "init" {
-			fmt.Println("Loading module: " + declName)
-			currentModuleValue, err := registry.Get("*modules." + declName)
-			if err != nil {
-				fmt.Printf("error: %s\n", err.Error())
-				return
-			}
-			i := currentModuleValue.Unwrap()
-			log.Println(reflect.TypeOf(i))
-			switch i.(type) {
+		currentType := pkg.Scope().Lookup(declName).Type().String()
+		if !strings.Contains(currentType, "github.com/AlexsJones/gotools/modules") {
+			continue
+		}
 
-			case *modules.Gitlab:
-				cast := i.(*modules.Gitlab)
-				loadModule(cast, &commands)
+		fmt.Println("Loading module: " + declName)
+		currentModuleValue, err := registry.Get("*modules." + declName)
+		if err != nil {
+			fmt.Printf("error: %s\n", err.Error())
+			return
+		}
+		i := currentModuleValue.Unwrap()
+		log.Println(reflect.TypeOf(i))
+		switch i.(type) {
 
-			case *modules.Jenkins:
-				cast := i.(*modules.Jenkins)
-				loadModule(cast, &commands)
-			}
+		case *modules.Portscan:
+			cast := i.(*modules.Portscan)
+			loadModule(cast, &commands)
+
+		case *modules.Jenkins:
+			cast := i.(*modules.Jenkins)
+			loadModule(cast, &commands)
 
 		}
 	}
