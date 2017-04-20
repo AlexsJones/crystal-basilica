@@ -1,19 +1,10 @@
-{{ .AnsiColor.Red }}▄████▄   ██▀███ ▓██   ██▓  ██████ ▄▄▄█████▓ ▄▄▄       ██▓        ▄▄▄▄    ▄▄▄        ██████  ██▓ ██▓     ██▓ ▄████▄   ▄▄▄
-{{ .AnsiColor.Red }}▒██▀ ▀█  ▓██ ▒ ██▒▒██  ██▒▒██    ▒ ▓  ██▒ ▓▒▒████▄    ▓██▒       ▓█████▄ ▒████▄    ▒██    ▒ ▓██▒▓██▒    ▓██▒▒██▀ ▀█  ▒████▄
-{{ .AnsiColor.Red }}▒▓█    ▄ ▓██ ░▄█ ▒ ▒██ ██░░ ▓██▄   ▒ ▓██░ ▒░▒██  ▀█▄  ▒██░       ▒██▒ ▄██▒██  ▀█▄  ░ ▓██▄   ▒██▒▒██░    ▒██▒▒▓█    ▄ ▒██  ▀█▄
-{{ .AnsiColor.Red }}▒▓▓▄ ▄██▒▒██▀▀█▄   ░ ▐██▓░  ▒   ██▒░ ▓██▓ ░ ░██▄▄▄▄██ ▒██░       ▒██░█▀  ░██▄▄▄▄██   ▒   ██▒░██░▒██░    ░██░▒▓▓▄ ▄██▒░██▄▄▄▄██
-{{ .AnsiColor.Red }}▒ ▓███▀ ░░██▓ ▒██▒ ░ ██▒▓░▒██████▒▒  ▒██▒ ░  ▓█   ▓██▒░██████▒   ░▓█  ▀█▓ ▓█   ▓██▒▒██████▒▒░██░░██████▒░██░▒ ▓███▀ ░ ▓█   ▓██▒
-{{ .AnsiColor.Red }}░ ░▒ ▒  ░░ ▒▓ ░▒▓░  ██▒▒▒ ▒ ▒▓▒ ▒ ░  ▒ ░░    ▒▒   ▓▒█░░ ▒░▓  ░   ░▒▓███▀▒ ▒▒   ▓▒█░▒ ▒▓▒ ▒ ░░▓  ░ ▒░▓  ░░▓  ░ ░▒ ▒  ░ ▒▒   ▓▒█░
-{{ .AnsiColor.Red }} ░  ▒     ░▒ ░ ▒░▓██ ░▒░ ░ ░▒  ░ ░    ░      ▒   ▒▒ ░░ ░ ▒  ░   ▒░▒   ░   ▒   ▒▒ ░░ ░▒  ░ ░ ▒ ░░ ░ ▒  ░ ▒ ░  ░  ▒     ▒   ▒▒ ░
-{{ .AnsiColor.Red }}░          ░░   ░ ▒ ▒ ░░  ░  ░  ░    ░        ░   ▒     ░ ░       ░    ░   ░   ▒   ░  ░  ░   ▒ ░  ░ ░    ▒ ░░          ░   ▒
-{{ .AnsiColor.Red }}░ ░         ░     ░ ░           ░                 ░  ░    ░  ░    ░            ░  ░      ░   ░      ░  ░ ░  ░ ░            ░  ░
-{{ .AnsiColor.Red }}░                 ░ ░                                                  ░                                    ░
-{{ .AnsiColor.Default }}GoVersion: {{ .GoVersion }}
-{{ .AnsiColor.Default }}GOOS: {{ .GOOS }}
-{{ .AnsiColor.Default }}GOARCH: {{ .GOARCH }}
-{{ .AnsiColor.Default }}NumCPU: {{ .NumCPU }}
-{{ .AnsiColor.Default }}GOPATH: {{ .GOPATH }}
-{{ .AnsiColor.Default }}GOROOT: {{ .GOROOT }}
-{{ .AnsiColor.Default }}Compiler: {{ .Compiler }}
-{{ .AnsiColor.Default }}ENV: {{ .Env "GOPATH" }}
-{{ .AnsiColor.Default }}Now: {{ .Now "Monday, 2 Jan 2006" }}
+{{ .AnsiColor.Red }}██████ ▄████▄   ██░ ██  ██▓  ██████ ███▄ ▄███▓
+{{ .AnsiColor.Red }}▒██    ▒▒██▀ ▀█  ▓██░ ██▒▓██▒▒██    ▒▓██▒▀█▀ ██▒
+{{ .AnsiColor.Red }}░ ▓██▄  ▒▓█    ▄ ▒██▀▀██░▒██▒░ ▓██▄  ▓██    ▓██░
+{{ .AnsiColor.Red }}▒   ██▒▓▓▄ ▄██▒░▓█ ░██ ░██░  ▒   ██▒██    ▒██
+{{ .AnsiColor.Red }}▒██████▒▒ ▓███▀ ░░▓█▒░██▓░██░▒██████▒▒██▒   ░██▒
+{{ .AnsiColor.Red }}▒ ▒▓▒ ▒ ░ ░▒ ▒  ░ ▒ ░░▒░▒░▓  ▒ ▒▓▒ ▒ ░ ▒░   ░  ░
+{{ .AnsiColor.Red }}░ ░▒  ░ ░ ░  ▒    ▒ ░▒░ ░ ▒ ░░ ░▒  ░ ░  ░      ░
+{{ .AnsiColor.Red }}░  ░  ░ ░         ░  ░░ ░ ▒ ░░  ░  ░ ░      ░
+{{ .AnsiColor.Red }}    ░ ░ ░       ░  ░  ░ ░        ░        ░
+{{ .AnsiColor.Default }}
