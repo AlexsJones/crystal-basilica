@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/big"
 	"net"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -169,7 +170,8 @@ func (p *Portscan) portList(rs string) ([]string, error) {
 	}
 	return ps, nil
 }
-func inc(ip net.IP) {
+
+func (p *Portscan) inc(ip net.IP) {
 	for j := len(ip) - 1; j >= 0; j-- {
 		ip[j]++
 		if ip[j] > 0 {
@@ -178,18 +180,110 @@ func inc(ip net.IP) {
 	}
 }
 
+func (p *Portscan) ping(host <-chan string, result chan<- struct {
+	string
+	bool
+}) {
+	for ip := range host {
+		_, err := exec.Command("ping", "-c1", "-t1", ip).Output()
+		var alive bool
+		if err != nil {
+			alive = false
+		} else {
+			alive = true
+		}
+		result <- struct {
+			string
+			bool
+		}{ip, alive}
+	}
+}
+func (p *Portscan) pingResults(pongNum int, pongChan <-chan struct {
+	string
+	bool
+}, doneChan chan<- []struct {
+	string
+	bool
+}) {
+	var alives []struct {
+		string
+		bool
+	}
+	for i := 0; i < pongNum; i++ {
+		pong := <-pongChan
+		if pong.bool {
+			alives = append(alives, pong)
+		}
+	}
+	doneChan <- alives
+}
+
 func (p *Portscan) hostsList(cidr string) ([]string, error) {
 	ip, ipnet, err := net.ParseCIDR(cidr)
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
-	fmt.Println("parsing..")
 
 	var ips []string
-	for anip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
-		ips = append(ips, anip.String())
+	for ip = ip.Mask(ipnet.Mask); ipnet.Contains(ip); p.inc(ip) {
+		ips = append(ips, ip.String())
 	}
 	return ips[1 : len(ips)-1], nil
+}
+
+func (p *Portscan) searchHosts(cidr string, searchAlive bool) {
+
+	hosts, _ := p.hostsList(cidr)
+	fmt.Printf("Searching through a maximum of %d hosts\n", len(hosts))
+	maxConcurrent := 100
+	pingChan := make(chan string, maxConcurrent /* max concurrent */)
+
+	pongChan := make(chan struct {
+		string
+		bool
+	}, len(hosts))
+
+	doneChan := make(chan []struct {
+		string
+		bool
+	})
+
+	for i := 0; i < maxConcurrent; i++ {
+		go p.ping(pingChan, pongChan)
+	}
+	for _, ip := range hosts {
+		pingChan <- ip
+	}
+
+	go p.pingResults(len(hosts), pongChan, doneChan)
+	alives := <-doneChan
+
+	if searchAlive { /* display alive hosts */
+		for _, host := range alives {
+			fmt.Println(host.string)
+		}
+	} else {
+		for _, alivehost := range alives {
+			for i, host := range hosts {
+
+				if strings.Compare(alivehost.string, host) == 0 {
+					hosts = append(hosts[:i], hosts[i+1:]...)
+
+				}
+			}
+		}
+		for _, unused := range hosts {
+			fmt.Println(unused)
+		}
+		fmt.Printf("There are a total of %d unused hosts on %s\n", len(hosts), cidr)
+	}
+}
+func (p *Portscan) unusedHosts(cidr string) {
+	p.searchHosts(cidr, false)
+}
+func (p *Portscan) aliveHosts(cidr string) {
+	p.searchHosts(cidr, true)
 }
 
 //LoadFlags for cli
@@ -252,10 +346,25 @@ func (p *Portscan) LoadFlags() []cli.Command {
 						fmt.Println(errMessage)
 						return errors.New(errMessage)
 					}
-					fmt.Println("Finding unused IP addresses in CIDR_BLOCK...")
+					fmt.Printf("Finding unused IP addresses in CIDR_BLOCK [%s]...\n", cidr)
 
-					_, _ = p.hostsList(cidr)
+					p.unusedHosts(cidr)
+					return nil
+				},
+			}, {
+				Name:    "alive",
+				Aliases: []string{"a"},
+				Usage:   "Please provide <CIDR_BLOCK (e.g. 10.0.0.0/16)>",
+				Action: func(c *cli.Context) error {
+					cidr := c.Args().Get(0)
+					if cidr == "" {
+						errMessage := "Requires a single argument: <CIDR_BLOCK (e.g. 10.0.0.0/16)>"
+						fmt.Println(errMessage)
+						return errors.New(errMessage)
+					}
+					fmt.Printf("Finding alive IP addresses in CIDR_BLOCK [%s]...\n", cidr)
 
+					p.aliveHosts(cidr)
 					return nil
 				},
 			},
