@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/AlexsJones/crystal-basilica/modules"
 	r "github.com/AlexsJones/go-type-registry/core"
-	"github.com/AlexsJones/gotools/modules"
 	_ "github.com/dimiro1/banner/autoload"
 	"github.com/urfave/cli"
 )
@@ -32,14 +32,14 @@ func main() {
 		return
 	}
 	//Load modules
-	pkg, err := importer.Default().Import("github.com/AlexsJones/gotools/modules")
+	pkg, err := importer.Default().Import("github.com/AlexsJones/crystal-basilica/modules")
 	if err != nil {
 		fmt.Printf("error: %s\n", err.Error())
 		return
 	}
 	for _, declName := range pkg.Scope().Names() {
 		currentType := pkg.Scope().Lookup(declName).Type().String()
-		if !strings.Contains(currentType, "github.com/AlexsJones/gotools/modules") {
+		if !strings.Contains(currentType, "github.com/AlexsJones/crystal-basilica/modules") {
 			continue
 		}
 
