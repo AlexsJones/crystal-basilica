@@ -5,4 +5,4 @@ install:
   - go get github.com/dimiro1/banner
   - go get github.com/urfave/cli
 
-script: go build
+script: go build && go install && crystal-basilica
