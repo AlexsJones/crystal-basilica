@@ -10,6 +10,7 @@
 ```
 
 Modular build tools written in golang
+[![Build Status](https://travis-ci.org/AlexsJones/crystal-basilica.svg?branch=master)](https://travis-ci.org/AlexsJones/crystal-basilica)
 
 ``` 
 gom install
