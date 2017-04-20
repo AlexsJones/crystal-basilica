@@ -1,0 +1,8 @@
+language: go
+
+install:
+  - go get github.com/AlexsJones/go-type-registry
+  - go get github.com/dimiro1/banner
+  - go get github.com/urfave/cli
+
+script: go build
