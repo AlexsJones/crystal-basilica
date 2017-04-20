@@ -91,10 +91,6 @@ func (p *Portscan) attacker(
 	}
 }
 
-/* attackOne tries to banner t, which must be a host:port pair.  It'll log
-successful connects and banner grabs.  buf is the read buffer, which will be
-populated if nil is returned and a banner was sent back.  If so, the number
-of bytes read is also returned. */
 func (p *Portscan) attackOne(t string, buf []byte, to time.Duration) (int, error) {
 	/* Try to connect */
 	c, err := net.DialTimeout("tcp", t, to)
@@ -173,6 +169,28 @@ func (p *Portscan) portList(rs string) ([]string, error) {
 	}
 	return ps, nil
 }
+func inc(ip net.IP) {
+	for j := len(ip) - 1; j >= 0; j-- {
+		ip[j]++
+		if ip[j] > 0 {
+			break
+		}
+	}
+}
+
+func (p *Portscan) hostsList(cidr string) ([]string, error) {
+	ip, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("parsing..")
+
+	var ips []string
+	for anip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
+		ips = append(ips, anip.String())
+	}
+	return ips[1 : len(ips)-1], nil
+}
 
 //LoadFlags for cli
 func (p *Portscan) LoadFlags() []cli.Command {
@@ -221,6 +239,23 @@ func (p *Portscan) LoadFlags() []cli.Command {
 					log.Printf("Waiting for the attackers to finish")
 					wg.Wait()
 					log.Printf("Done.")
+					return nil
+				},
+			}, {
+				Name:    "unused",
+				Aliases: []string{"u"},
+				Usage:   "Please provide <CIDR_BLOCK (e.g. 10.0.0.0/16)>",
+				Action: func(c *cli.Context) error {
+					cidr := c.Args().Get(0)
+					if cidr == "" {
+						errMessage := "Requires a single argument: <CIDR_BLOCK (e.g. 10.0.0.0/16)>"
+						fmt.Println(errMessage)
+						return errors.New(errMessage)
+					}
+					fmt.Println("Finding unused IP addresses in CIDR_BLOCK...")
+
+					_, _ = p.hostsList(cidr)
+
 					return nil
 				},
 			},
