@@ -17,9 +17,6 @@ import (
 
 //Portscan struct todo
 type Portscan struct {
-	slogger *log.Logger
-	start   time.Time
-	nSuc    uint64
 }
 
 func (p *Portscan) attacker(
@@ -90,7 +87,7 @@ func (p *Portscan) attacker(
 			continue
 		}
 		buf = buf[:n]
-		p.slog(t, buf)
+		fmt.Println(t)
 	}
 }
 
@@ -221,7 +218,7 @@ func (p *Portscan) LoadFlags() []cli.Command {
 					}
 
 					close(ch)
-					log.Printf("INFO Waiting for the attackers to finish")
+					log.Printf("Waiting for the attackers to finish")
 					wg.Wait()
 					log.Printf("Done.")
 					return nil
@@ -232,8 +229,4 @@ func (p *Portscan) LoadFlags() []cli.Command {
 
 	commands = append(commands, n)
 	return commands
-}
-
-func (p *Portscan) slog(t string, buf []byte) {
-	fmt.Println(t)
 }

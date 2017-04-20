@@ -22,6 +22,7 @@ func generateRegistry(r *r.Registry) error {
 
 func main() {
 	app := cli.NewApp()
+
 	var commands []cli.Command
 
 	//Register types
@@ -51,11 +52,10 @@ func main() {
 		i := currentModuleValue.Unwrap()
 		log.Println(reflect.TypeOf(i))
 
-		var ps *modules.Portscan
 		switch i.(type) {
 
 		case *modules.Portscan:
-			ps = i.(*modules.Portscan)
+			ps := i.(*modules.Portscan)
 			moduleCommands := ps.LoadFlags()
 			commands = append(commands, moduleCommands...)
 		}
