@@ -285,6 +285,36 @@ func (p *Portscan) unusedHosts(cidr string) {
 func (p *Portscan) aliveHosts(cidr string) {
 	p.searchHosts(cidr, true)
 }
+func (p *Portscan) generatePortScan(host string, prePort string) error {
+	ports, err := p.portList(prePort)
+	if err != nil {
+		return err
+	}
+
+	wg := &sync.WaitGroup{}
+	ch := make(chan string)
+	for i := 0; i < int(128); i++ {
+		wg.Add(1)
+		go p.attacker(
+			host,
+			ch,
+			false,
+			false,
+			time.Second,
+			int(128),
+			wg,
+		)
+	}
+	for _, dp := range ports {
+		ch <- dp
+	}
+
+	close(ch)
+	log.Printf("Waiting for the attackers to finish")
+	wg.Wait()
+	log.Printf("Done.")
+	return nil
+}
 
 //LoadFlags for cli
 func (p *Portscan) LoadFlags() []cli.Command {
@@ -301,39 +331,14 @@ func (p *Portscan) LoadFlags() []cli.Command {
 				Usage:   "Please provide <HOSTNAME (e.g. 10.65.1.0)> <PORT-RANGE (e.g. 1-1000)>",
 				Action: func(c *cli.Context) error {
 
+					host := c.Args().Get(0)
 					preport := c.Args().Get(1)
 					fmt.Println("Scanning: " + c.Args().Get(0) + " " + preport)
 					if preport == "" {
 						return errors.New("Requires port range to scan")
 					}
-					ports, err := p.portList(preport)
-					if err != nil {
-						return err
-					}
 
-					wg := &sync.WaitGroup{}
-					ch := make(chan string)
-					for i := 0; i < int(128); i++ {
-						wg.Add(1)
-						go p.attacker(
-							c.Args().Get(0),
-							ch,
-							false,
-							false,
-							time.Second,
-							int(128),
-							wg,
-						)
-					}
-					for _, dp := range ports {
-						ch <- dp
-					}
-
-					close(ch)
-					log.Printf("Waiting for the attackers to finish")
-					wg.Wait()
-					log.Printf("Done.")
-					return nil
+					return p.generatePortScan(host, preport)
 				},
 			}, {
 				Name:    "unused",
