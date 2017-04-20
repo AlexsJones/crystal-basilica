@@ -11,13 +11,18 @@
 
 Modular build tools written in golang
 
+``` 
+gom install
+go build 
+go install
+```
 
 ```
-gotools portscan scan 192.168.147 1-20000
+crystal-basilica portscan scan 192.168.147 1-20000
 ```
 ```
-gotools portscan alive 10.65.82.0/25
+crystal-basilica portscan alive 10.65.82.0/25
 ```
 ```
-gotools portscan unused 10.65.82.0/25
+crystal-basilica portscan unused 10.65.82.0/25
 ```
