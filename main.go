@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"go/importer"
-	"log"
 	"os"
-	"reflect"
 	"strings"
 
 	r "github.com/AlexsJones/go-type-registry/core"
@@ -22,7 +20,6 @@ func generateRegistry(r *r.Registry) error {
 
 func main() {
 	app := cli.NewApp()
-
 	var commands []cli.Command
 
 	//Register types
@@ -43,14 +40,12 @@ func main() {
 			continue
 		}
 
-		fmt.Println("Loading module: " + declName)
 		currentModuleValue, err := registry.Get("*modules." + declName)
 		if err != nil {
 			fmt.Printf("error: %s\n", err.Error())
 			return
 		}
 		i := currentModuleValue.Unwrap()
-		log.Println(reflect.TypeOf(i))
 
 		switch i.(type) {
 

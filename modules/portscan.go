@@ -263,6 +263,7 @@ func (p *Portscan) searchHosts(cidr string, searchAlive bool) {
 		for _, host := range alives {
 			fmt.Println(host.string)
 		}
+		fmt.Printf("There are a total of %d alive hosts on %s\n", len(alives), cidr)
 	} else {
 		for _, alivehost := range alives {
 			for i, host := range hosts {
