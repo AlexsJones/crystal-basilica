@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/importer"
 	"os"
@@ -8,9 +9,20 @@ import (
 
 	r "github.com/AlexsJones/go-type-registry/core"
 	"github.com/AlexsJones/schism/modules"
-	_ "github.com/dimiro1/banner/autoload"
+	"github.com/dimiro1/banner"
 	"github.com/urfave/cli"
 )
+
+const b string = `
+{{ .AnsiColor.Green }}______   ______   ___   ___    ________  ______   ___ __ __
+{{ .AnsiColor.Green }}/_____/\ /_____/\ /__/\ /__/\  /_______/\/_____/\ /__//_//_/\
+{{ .AnsiColor.Green }}\::::_\/_\:::__\/ \::\ \\  \ \ \__.::._\/\::::_\/_\::\| \| \ \
+{{ .AnsiColor.Green }} \:\/___/\\:\ \  __\::\/_\ .\ \   \::\ \  \:\/___/\\:.      \ \
+{{ .AnsiColor.Green }}  \_::._\:\\:\ \/_/\\:: ___::\ \  _\::\ \__\_::._\:\\:.\-/\  \ \
+{{ .AnsiColor.Green }}    /____\:\\:\_\ \ \\: \ \\::\ \/__\::\__/\ /____\:\\. \  \  \ \
+{{ .AnsiColor.Green }}    \_____\/ \_____\/ \__\/ \::\/\________\/ \_____\/ \__\/ \__\/
+{{ .AnsiColor.Default }}
+`
 
 func generateRegistry(r *r.Registry) error {
 	//Adding modules here
@@ -22,6 +34,7 @@ func main() {
 	app := cli.NewApp()
 	var commands []cli.Command
 
+	banner.Init(os.Stdout, true, true, bytes.NewBufferString(b))
 	//Register types
 	registry, err := r.NewRegistry(generateRegistry)
 	if err != nil {
