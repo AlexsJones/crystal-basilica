@@ -229,7 +229,7 @@ func (p *Portscan) hostsList(cidr string) ([]string, error) {
 	for ip = ip.Mask(ipnet.Mask); ipnet.Contains(ip); p.inc(ip) {
 		ips = append(ips, ip.String())
 	}
-	return ips[1 : len(ips)-1], nil
+	return ips, nil
 }
 
 func (p *Portscan) searchHosts(cidr string, searchAlive bool) {
