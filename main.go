@@ -2,13 +2,10 @@ package main
 
 import (
 	"bytes"
-	"fmt"
-	"go/importer"
 	"os"
-	"strings"
 
-	r "github.com/AlexsJones/go-type-registry/core"
-	"github.com/AlexsJones/schism/modules"
+	modules "github.com/AlexsJones/schism/modules"
+	runtime "github.com/AlexsJones/schism/runtime"
 	"github.com/dimiro1/banner"
 	"github.com/urfave/cli"
 )
@@ -24,51 +21,24 @@ const b string = `
 {{ .AnsiColor.Default }}
 `
 
-func generateRegistry(r *r.Registry) error {
-	//Adding modules here
-	r.Put(&modules.Portscan{})
-	return nil
+func load(m runtime.Module, commands *[]cli.Command) {
+	flags := m.LoadFlags()
+	*commands = append(*commands, flags...)
+}
+
+func loadModules(commands *[]cli.Command) {
+	//Load Modules here
+	portScan := &modules.Portscan{}
+	load(portScan, commands)
 }
 
 func main() {
 	app := cli.NewApp()
+
 	var commands []cli.Command
 
 	banner.Init(os.Stdout, true, true, bytes.NewBufferString(b))
-	//Register types
-	registry, err := r.NewRegistry(generateRegistry)
-	if err != nil {
-		fmt.Printf("error: %s\n", err.Error())
-		return
-	}
-	//Load modules
-	pkg, err := importer.Default().Import("github.com/AlexsJones/schism/modules")
-	if err != nil {
-		fmt.Printf("error: %s\n", err.Error())
-		return
-	}
-	for _, declName := range pkg.Scope().Names() {
-		currentType := pkg.Scope().Lookup(declName).Type().String()
-		if !strings.Contains(currentType, "github.com/AlexsJones/schism/modules") {
-			continue
-		}
-
-		currentModuleValue, err := registry.Get("*modules." + declName)
-		if err != nil {
-			fmt.Printf("error: %s\n", err.Error())
-			return
-		}
-		i := currentModuleValue.Unwrap()
-
-		switch i.(type) {
-
-		case *modules.Portscan:
-			ps := i.(*modules.Portscan)
-			moduleCommands := ps.LoadFlags()
-			commands = append(commands, moduleCommands...)
-		}
-	}
-
+	loadModules(&commands)
 	app.Commands = commands
 	app.Run(os.Args)
 }
