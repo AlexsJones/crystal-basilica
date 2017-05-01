@@ -30,6 +30,8 @@ func loadModules(commands *[]cli.Command) {
 	//Load Modules here
 	portScan := &modules.Portscan{}
 	load(portScan, commands)
+	fileControl := &modules.Filecontrol{}
+	load(fileControl, commands)
 }
 
 func main() {

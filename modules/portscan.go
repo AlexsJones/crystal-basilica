@@ -324,7 +324,7 @@ func (p *Portscan) LoadFlags() []cli.Command {
 	n := cli.Command{
 		Name:    "portscan",
 		Aliases: []string{"p"},
-		Usage:   "options for task templates",
+		Usage:   "port scanning operations",
 		Subcommands: []cli.Command{
 			{
 				Name:    "scan",
