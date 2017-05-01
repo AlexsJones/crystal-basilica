@@ -12,7 +12,7 @@
 [![Build Status](https://travis-ci.org/AlexsJones/schism.svg?branch=master)](https://travis-ci.org/AlexsJones/schism)
 
 ```
-go install
+go get github.com/AlexsJones/schism
 ```
 
 ```
